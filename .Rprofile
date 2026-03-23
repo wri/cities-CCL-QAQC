@@ -40,10 +40,14 @@ local({
   missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
 
   if (!dir.exists(project_library) || length(missing_packages) > 0) {
-    renv::restore(
-      project = project_dir,
-      prompt = FALSE,
-      repos = getOption("repos")
+    dir.create(project_library, recursive = TRUE, showWarnings = FALSE)
+
+    utils::install.packages(
+      missing_packages,
+      lib = project_library,
+      repos = getOption("repos"),
+      dependencies = TRUE,
+      type = getOption("pkgType")
     )
   }
 })
