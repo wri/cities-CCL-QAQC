@@ -179,6 +179,42 @@ nominal_stats <- function(values) {
   )
 }
 
+# Drop empty or malformed geometries before sending them to leaflet.
+clean_vector_layer <- function(vector_data) {
+  if (is.null(vector_data) || !nrow(vector_data)) {
+    return(NULL)
+  }
+
+  vector_data <- tryCatch(
+    sf::st_zm(vector_data, drop = TRUE, what = "ZM"),
+    error = function(e) vector_data
+  )
+
+  non_empty <- tryCatch(
+    !sf::st_is_empty(vector_data),
+    error = function(e) rep(TRUE, nrow(vector_data))
+  )
+
+  finite_bbox <- vapply(
+    seq_len(nrow(vector_data)),
+    function(i) {
+      bbox <- tryCatch(
+        sf::st_bbox(vector_data[i, , drop = FALSE]),
+        error = function(e) c(xmin = NA_real_, ymin = NA_real_, xmax = NA_real_, ymax = NA_real_)
+      )
+      all(is.finite(as.numeric(bbox)))
+    },
+    logical(1)
+  )
+
+  cleaned <- vector_data[non_empty & finite_bbox, , drop = FALSE]
+  if (!nrow(cleaned)) {
+    return(NULL)
+  }
+
+  cleaned
+}
+
 # Read an optional vector overlay from an HTTP URL.
 load_vector_layer <- function(vector_url) {
   if (!nzchar(trimws(vector_url))) {
@@ -199,11 +235,20 @@ load_vector_layer <- function(vector_url) {
     stop("Vector file could not be read as sf data.", call. = FALSE)
   }
 
-  sf::st_transform(vector_data, 4326)
+  transformed <- sf::st_transform(vector_data, 4326)
+  cleaned <- clean_vector_layer(transformed)
+
+  if (is.null(cleaned) || !nrow(cleaned)) {
+    stop("Vector file was read, but it does not contain any valid geometries for display.", call. = FALSE)
+  }
+
+  cleaned
 }
 
 # Add points, lines, and polygons to the leaflet map with simple styling.
 add_vector_overlay <- function(map, vector_data) {
+  vector_data <- clean_vector_layer(vector_data)
+
   if (is.null(vector_data) || !nrow(vector_data)) {
     return(map)
   }
@@ -295,11 +340,17 @@ get_raster_bounds <- function(rast) {
 
 # Get map bounds from a vector overlay that has been transformed to EPSG:4326.
 get_vector_bounds <- function(vector_data) {
+  vector_data <- clean_vector_layer(vector_data)
+
   if (is.null(vector_data) || !nrow(vector_data)) {
     return(NULL)
   }
 
   bbox <- sf::st_bbox(vector_data)
+  if (!all(is.finite(as.numeric(bbox)))) {
+    return(NULL)
+  }
+
   list(
     lng1 = as.numeric(bbox["xmin"]),
     lng2 = as.numeric(bbox["xmax"]),

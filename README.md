@@ -27,19 +27,12 @@ From this folder:
 Rscript run_app.R
 ```
 
-On first run:
-
-1. `.Rprofile` installs `renv` if it is missing.
-2. `renv` restores the project library from `renv.lock`.
-3. The app launches locally in your browser.
-
 ## Alternative launch
 
 If you prefer an interactive R session:
 
 ```r
-source(".Rprofile")
-shiny::runApp()
+source("run_app.R")
 ```
 
 ## Instructions
@@ -62,9 +55,8 @@ on the map and the pixel value will be displayed in the box at the lower left of
 - `app.R`: the Shiny app
 - `R/s3_helpers.R`: local copies of the helper functions needed for
   `list_tiles()` and `load_and_merge()`
-- `.Rprofile`: bootstraps and restores the `renv` environment
-- `renv.lock`: locked package versions for the app
-- `run_app.R`: one-command launcher for end users
+- `.Rprofile`: intentionally inert so opening the repo has no side effects
+- `run_app.R`: installs missing packages and launches the app
 
 ## Notes
 
