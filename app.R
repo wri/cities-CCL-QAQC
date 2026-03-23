@@ -1,3 +1,16 @@
+clear_conflicting_geospatial_env <- function() {
+  vars <- c("PROJ_LIB", "PROJ_DATA", "GDAL_DATA")
+
+  for (var in vars) {
+    value <- Sys.getenv(var, unset = "")
+    if (nzchar(value) && grepl("(anaconda|miniconda|conda)", value, ignore.case = TRUE)) {
+      Sys.unsetenv(var)
+    }
+  }
+}
+
+clear_conflicting_geospatial_env()
+
 library(shiny)
 library(leaflet)
 library(terra)
@@ -79,7 +92,31 @@ prepare_map_raster <- function(rast, data_type) {
     return(rast)
   }
 
-  terra::project(rast, "EPSG:4326", method = "near")
+  raster_crs <- tryCatch(terra::crs(rast), error = function(e) "")
+  if (!nzchar(trimws(raster_crs))) {
+    stop(
+      paste(
+        "Raster CRS could not be read on this machine.",
+        "This is often caused by a conflicting PROJ installation such as Anaconda.",
+        "Try launching the app outside Conda or clearing PROJ_LIB / PROJ_DATA."
+      ),
+      call. = FALSE
+    )
+  }
+
+  tryCatch(
+    terra::project(rast, "EPSG:4326", method = "near"),
+    error = function(e) {
+      stop(
+        paste(
+          "Could not reproject the raster for map display.",
+          "This usually indicates a PROJ/GDAL configuration issue on this machine.",
+          conditionMessage(e)
+        ),
+        call. = FALSE
+      )
+    }
+  )
 }
 
 # Sample raster values for the chart without reading every pixel into memory.
@@ -422,6 +459,19 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+  safe_notify_error <- function(message_text) {
+    if (is.function(session$sendNotification)) {
+      tryCatch(
+        showNotification(message_text, type = "error", duration = NULL),
+        error = function(e) {
+          message(message_text)
+        }
+      )
+    } else {
+      message(message_text)
+    }
+  }
+
   # Store the current raster, vector, and chart state in one place.
   rv <- reactiveValues(
     tiles = character(0),
@@ -546,7 +596,7 @@ server <- function(input, output, session) {
         updateSelectInput(session, "layer_name", choices = layers, selected = layers[[1]])
       },
       error = function(e) {
-        showNotification(conditionMessage(e), type = "error", duration = NULL)
+        safe_notify_error(conditionMessage(e))
       }
     )
   })
@@ -596,7 +646,7 @@ server <- function(input, output, session) {
           load_selected_layer(layer_name, scenario_prefix_value, vector_url, tiles, data_type)
         },
         error = function(e) {
-          showNotification(conditionMessage(e), type = "error", duration = NULL)
+          safe_notify_error(conditionMessage(e))
         }
       )
     }, delay = 0.1)

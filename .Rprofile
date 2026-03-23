@@ -1,4 +1,11 @@
 local({
+  for (var in c("PROJ_LIB", "PROJ_DATA", "GDAL_DATA")) {
+    value <- Sys.getenv(var, unset = "")
+    if (nzchar(value) && grepl("(anaconda|miniconda|conda)", value, ignore.case = TRUE)) {
+      Sys.unsetenv(var)
+    }
+  }
+
   # Set repository and renv options before activating renv so restore() can
   # prefer prebuilt binaries instead of compiling packages from source.
   options(repos = c(CRAN = "https://packagemanager.posit.co/cran/latest"))
