@@ -385,7 +385,7 @@ ui <- fluidPage(
       radioButtons(
         "data_type",
         "Layer type",
-        choices = c("Continuous" = "continuous", "Nominal" = "nominal"),
+        choices = c("Continuous" = "continuous", "Discrete" = "nominal"),
         selected = "continuous",
         inline = TRUE
       ),

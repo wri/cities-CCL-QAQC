@@ -1,8 +1,7 @@
 # Raster QA/QC Viewer
 
-This folder is a standalone Shiny app for browsing raster outputs stored in S3.
-It does not depend on the rest of the `cities-heat-resilient-infrastructure`
-repo once copied out as its own repository.
+This is a standalone Shiny app for browsing CCL_layers raster outputs stored in S3.
+It's intended to make QA/QC easier.
 
 ## What it does
 
@@ -20,7 +19,7 @@ repo once copied out as its own repository.
 - R
 - Internet access to the public `wri-cities-tcm` bucket
 
-## First run
+## Run
 
 From this folder:
 
@@ -42,6 +41,21 @@ If you prefer an interactive R session:
 source(".Rprofile")
 shiny::runApp()
 ```
+
+## Instructions
+
+1. Choose a city from the dropdown--the aoi name will auto populate.
+2. Choose an infrastructure from the dropdown—-the scenario name will auto populate.
+3. Click 'List available layers'. The Layer dropdown will populate with the raster layers
+in the ccl_layers tile folders.
+4. Choose whether the raster should be rendered as continuous or discrete.
+5. Optionally add a URL pointing to a geojson layer like a boundary.
+6. Choose the basemap.
+7. Click 'Load selected layer' to add the layer to the map. It has to load and merge
+the layer for all tiles, so it takes a minute, but your patience will be rewarded.
+8. The raster will display in the map, alongside summary statistics and a density
+plot for continuous rasters and a histogram for discrete raster. You can also click
+on the map and the pixel value will be displayed in the box at the lower left of the page.
 
 ## Repo contents
 
