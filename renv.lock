@@ -37,13 +37,6 @@
       "Repository": "CRAN",
       "Requirements": []
     },
-    "arrow": {
-      "Package": "arrow",
-      "Version": "21.0.0.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": ["R6", "assertthat", "bit64", "cpp11", "glue", "purrr", "rlang", "tidyselect", "vctrs"]
-    },
     "assertthat": {
       "Package": "assertthat",
       "Version": "0.2.1",
@@ -77,14 +70,29 @@
       "Version": "0.9.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["base64enc", "cachem", "fastmap", "htmltools", "jquerylib", "jsonlite", "lifecycle", "memoise", "mime", "rlang", "sass"]
+      "Requirements": [
+        "base64enc",
+        "cachem",
+        "fastmap",
+        "htmltools",
+        "jquerylib",
+        "jsonlite",
+        "lifecycle",
+        "memoise",
+        "mime",
+        "rlang",
+        "sass"
+      ]
     },
     "cachem": {
       "Package": "cachem",
       "Version": "1.1.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["fastmap", "rlang"]
+      "Requirements": [
+        "fastmap",
+        "rlang"
+      ]
     },
     "classInt": {
       "Package": "classInt",
@@ -119,7 +127,12 @@
       "Version": "1.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["R6", "htmltools", "jsonlite", "lazyeval"]
+      "Requirements": [
+        "R6",
+        "htmltools",
+        "jsonlite",
+        "lazyeval"
+      ]
     },
     "digest": {
       "Package": "digest",
@@ -133,7 +146,19 @@
       "Version": "1.1.4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["R6", "cli", "generics", "glue", "lifecycle", "magrittr", "pillar", "rlang", "tibble", "tidyselect", "vctrs"]
+      "Requirements": [
+        "R6",
+        "cli",
+        "generics",
+        "glue",
+        "lifecycle",
+        "magrittr",
+        "pillar",
+        "rlang",
+        "tibble",
+        "tidyselect",
+        "vctrs"
+      ]
     },
     "e1071": {
       "Package": "e1071",
@@ -175,7 +200,10 @@
       "Version": "0.5.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["htmltools", "rlang"]
+      "Requirements": [
+        "htmltools",
+        "rlang"
+      ]
     },
     "fs": {
       "Package": "fs",
@@ -196,7 +224,18 @@
       "Version": "3.5.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["cli", "glue", "gtable", "isoband", "lifecycle", "rlang", "scales", "tibble", "vctrs", "withr"]
+      "Requirements": [
+        "cli",
+        "glue",
+        "gtable",
+        "isoband",
+        "lifecycle",
+        "rlang",
+        "scales",
+        "tibble",
+        "vctrs",
+        "withr"
+      ]
     },
     "glue": {
       "Package": "glue",
@@ -210,7 +249,12 @@
       "Version": "0.3.6",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["cli", "glue", "lifecycle", "rlang"]
+      "Requirements": [
+        "cli",
+        "glue",
+        "lifecycle",
+        "rlang"
+      ]
     },
     "highr": {
       "Package": "highr",
@@ -224,21 +268,37 @@
       "Version": "0.5.8.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["base64enc", "digest", "fastmap", "rlang"]
+      "Requirements": [
+        "base64enc",
+        "digest",
+        "fastmap",
+        "rlang"
+      ]
     },
     "htmlwidgets": {
       "Package": "htmlwidgets",
       "Version": "1.6.4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["htmltools", "jsonlite", "knitr", "rmarkdown", "yaml"]
+      "Requirements": [
+        "htmltools",
+        "jsonlite",
+        "knitr",
+        "rmarkdown",
+        "yaml"
+      ]
     },
     "httpuv": {
       "Package": "httpuv",
       "Version": "1.6.16",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["R6", "Rcpp", "later", "promises"]
+      "Requirements": [
+        "R6",
+        "Rcpp",
+        "later",
+        "promises"
+      ]
     },
     "isoband": {
       "Package": "isoband",
@@ -266,7 +326,12 @@
       "Version": "1.50",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["evaluate", "highr", "xfun", "yaml"]
+      "Requirements": [
+        "evaluate",
+        "highr",
+        "xfun",
+        "yaml"
+      ]
     },
     "labeling": {
       "Package": "labeling",
@@ -280,7 +345,10 @@
       "Version": "1.4.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["Rcpp", "rlang"]
+      "Requirements": [
+        "Rcpp",
+        "rlang"
+      ]
     },
     "lazyeval": {
       "Package": "lazyeval",
@@ -294,7 +362,21 @@
       "Version": "2.2.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["RColorBrewer", "crosstalk", "htmltools", "htmlwidgets", "jquerylib", "leaflet.providers", "magrittr", "png", "raster", "scales", "sp", "viridisLite", "xfun"]
+      "Requirements": [
+        "RColorBrewer",
+        "crosstalk",
+        "htmltools",
+        "htmlwidgets",
+        "jquerylib",
+        "leaflet.providers",
+        "magrittr",
+        "png",
+        "raster",
+        "scales",
+        "sp",
+        "viridisLite",
+        "xfun"
+      ]
     },
     "leaflet.providers": {
       "Package": "leaflet.providers",
@@ -308,7 +390,11 @@
       "Version": "1.0.4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["cli", "glue", "rlang"]
+      "Requirements": [
+        "cli",
+        "glue",
+        "rlang"
+      ]
     },
     "magrittr": {
       "Package": "magrittr",
@@ -322,7 +408,10 @@
       "Version": "2.0.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["cachem", "rlang"]
+      "Requirements": [
+        "cachem",
+        "rlang"
+      ]
     },
     "mime": {
       "Package": "mime",
@@ -343,7 +432,14 @@
       "Version": "1.10.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["cli", "glue", "lifecycle", "rlang", "utf8", "vctrs"]
+      "Requirements": [
+        "cli",
+        "glue",
+        "lifecycle",
+        "rlang",
+        "utf8",
+        "vctrs"
+      ]
     },
     "pkgconfig": {
       "Package": "pkgconfig",
@@ -364,7 +460,15 @@
       "Version": "1.5.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["R6", "fastmap", "later", "lifecycle", "magrittr", "otel", "rlang"]
+      "Requirements": [
+        "R6",
+        "fastmap",
+        "later",
+        "lifecycle",
+        "magrittr",
+        "otel",
+        "rlang"
+      ]
     },
     "proxy": {
       "Package": "proxy",
@@ -378,7 +482,13 @@
       "Version": "1.0.4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["cli", "lifecycle", "magrittr", "rlang", "vctrs"]
+      "Requirements": [
+        "cli",
+        "lifecycle",
+        "magrittr",
+        "rlang",
+        "vctrs"
+      ]
     },
     "rappdirs": {
       "Package": "rappdirs",
@@ -392,7 +502,11 @@
       "Version": "3.6-32",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["Rcpp", "sp", "terra"]
+      "Requirements": [
+        "Rcpp",
+        "sp",
+        "terra"
+      ]
     },
     "rlang": {
       "Package": "rlang",
@@ -406,49 +520,100 @@
       "Version": "2.29",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["bslib", "evaluate", "fontawesome", "htmltools", "jquerylib", "jsonlite", "knitr", "tinytex", "xfun", "yaml"]
+      "Requirements": [
+        "bslib",
+        "evaluate",
+        "fontawesome",
+        "htmltools",
+        "jquerylib",
+        "jsonlite",
+        "knitr",
+        "tinytex",
+        "xfun",
+        "yaml"
+      ]
     },
     "s2": {
       "Package": "s2",
       "Version": "1.1.9",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["Rcpp", "wk"]
+      "Requirements": [
+        "Rcpp",
+        "wk"
+      ]
     },
     "sass": {
       "Package": "sass",
       "Version": "0.4.10",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["R6", "fs", "htmltools", "rappdirs", "rlang"]
+      "Requirements": [
+        "R6",
+        "fs",
+        "htmltools",
+        "rappdirs",
+        "rlang"
+      ]
     },
     "scales": {
       "Package": "scales",
       "Version": "1.4.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["R6", "RColorBrewer", "cli", "farver", "glue", "labeling", "lifecycle", "rlang", "viridisLite"]
+      "Requirements": [
+        "R6",
+        "RColorBrewer",
+        "cli",
+        "farver",
+        "glue",
+        "labeling",
+        "lifecycle",
+        "rlang",
+        "viridisLite"
+      ]
     },
     "sf": {
       "Package": "sf",
       "Version": "1.0-21",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["DBI", "Rcpp", "classInt", "magrittr", "s2", "units"]
-    },
-    "sfarrow": {
-      "Package": "sfarrow",
-      "Version": "0.4.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": ["arrow", "dplyr", "jsonlite", "sf"]
+      "Requirements": [
+        "DBI",
+        "Rcpp",
+        "classInt",
+        "magrittr",
+        "s2",
+        "units"
+      ]
     },
     "shiny": {
       "Package": "shiny",
       "Version": "1.13.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["R6", "bslib", "cachem", "cli", "commonmark", "fastmap", "fontawesome", "glue", "htmltools", "httpuv", "jsonlite", "later", "lifecycle", "mime", "otel", "promises", "rlang", "sourcetools", "withr", "xtable"]
+      "Requirements": [
+        "R6",
+        "bslib",
+        "cachem",
+        "cli",
+        "commonmark",
+        "fastmap",
+        "fontawesome",
+        "glue",
+        "htmltools",
+        "httpuv",
+        "jsonlite",
+        "later",
+        "lifecycle",
+        "mime",
+        "otel",
+        "promises",
+        "rlang",
+        "sourcetools",
+        "withr",
+        "xtable"
+      ]
     },
     "sourcetools": {
       "Package": "sourcetools",
@@ -476,14 +641,29 @@
       "Version": "3.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["fansi", "lifecycle", "magrittr", "pillar", "pkgconfig", "rlang", "vctrs"]
+      "Requirements": [
+        "fansi",
+        "lifecycle",
+        "magrittr",
+        "pillar",
+        "pkgconfig",
+        "rlang",
+        "vctrs"
+      ]
     },
     "tidyselect": {
       "Package": "tidyselect",
       "Version": "1.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["cli", "glue", "lifecycle", "rlang", "vctrs", "withr"]
+      "Requirements": [
+        "cli",
+        "glue",
+        "lifecycle",
+        "rlang",
+        "vctrs",
+        "withr"
+      ]
     },
     "tinytex": {
       "Package": "tinytex",
@@ -511,7 +691,12 @@
       "Version": "0.6.5",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Requirements": ["cli", "glue", "lifecycle", "rlang"]
+      "Requirements": [
+        "cli",
+        "glue",
+        "lifecycle",
+        "rlang"
+      ]
     },
     "viridisLite": {
       "Package": "viridisLite",

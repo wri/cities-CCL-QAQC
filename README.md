@@ -11,8 +11,7 @@ repo once copied out as its own repository.
 - Loads and merges the selected raster across tiles
 - Displays the raster on an interactive map with pan, zoom, identify, and
   optional satellite basemap
-- Optionally overlays a vector file from an HTTP `geojson`, `json`, or
-  `parquet` URL
+- Optionally overlays a vector file from an HTTP `geojson` or `json` URL
 - Shows summary statistics plus a density plot for continuous rasters or a
   histogram for nominal rasters
 

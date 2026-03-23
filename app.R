@@ -155,8 +155,7 @@ load_vector_layer <- function(vector_url) {
     ext,
     geojson = sf::st_read(vector_url, quiet = TRUE),
     json = sf::st_read(vector_url, quiet = TRUE),
-    parquet = sfarrow::st_read_parquet(vector_url),
-    stop("Vector URL must point to a .geojson, .json, or .parquet file.", call. = FALSE)
+    stop("Vector URL must point to a .geojson or .json file.", call. = FALSE)
   )
 
   if (!inherits(vector_data, "sf")) {
@@ -393,7 +392,7 @@ ui <- fluidPage(
       textInput(
         "vector_url",
         "Optional vector URL",
-        placeholder = "https://.../aoi.geojson or https://.../layer.parquet"
+        placeholder = "https://.../aoi.geojson"
       ),
       selectInput("basemap_name", "Basemap", choices = basemap_choices, selected = "CartoDB.Positron"),
       sliderInput("opacity", "Raster opacity", min = 0.2, max = 1, value = 0.85, step = 0.05),

@@ -1,3 +1,4 @@
+source("renv/activate.R")
 local({
   options(repos = c(CRAN = "https://cloud.r-project.org"))
   options(renv.consent = TRUE)
@@ -21,7 +22,6 @@ local({
     "ggplot2",
     "glue",
     "sf",
-    "sfarrow",
     "viridisLite",
     "later"
   )
