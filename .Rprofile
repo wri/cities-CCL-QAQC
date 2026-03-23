@@ -3,6 +3,12 @@ local({
   options(repos = c(CRAN = "https://cloud.r-project.org"))
   options(renv.consent = TRUE)
 
+  # Prefer prebuilt binaries when the platform supports them so fresh installs
+  # do not need to compile packages like png from source.
+  if (.Platform$OS.type == "windows" || identical(Sys.info()[["sysname"]], "Darwin")) {
+    options(pkgType = "binary")
+  }
+
   project_dir <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
 
   if (!requireNamespace("renv", quietly = TRUE)) {
