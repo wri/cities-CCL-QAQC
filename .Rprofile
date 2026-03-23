@@ -1,18 +1,22 @@
-source("renv/activate.R")
 local({
-  options(repos = c(CRAN = "https://cloud.r-project.org"))
+  # Set repository and renv options before activating renv so restore() can
+  # prefer prebuilt binaries instead of compiling packages from source.
+  options(repos = c(CRAN = "https://packagemanager.posit.co/cran/latest"))
   options(renv.consent = TRUE)
+  options(renv.config.repos.override = "CRAN=https://packagemanager.posit.co/cran/latest")
 
-  # Prefer prebuilt binaries when the platform supports them so fresh installs
-  # do not need to compile packages like png from source.
   if (.Platform$OS.type == "windows" || identical(Sys.info()[["sysname"]], "Darwin")) {
     options(pkgType = "binary")
   }
+})
 
+source("renv/activate.R")
+
+local({
   project_dir <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
 
   if (!requireNamespace("renv", quietly = TRUE)) {
-    utils::install.packages("renv", repos = getOption("repos"))
+    utils::install.packages("renv", repos = getOption("repos"), type = getOption("pkgType"))
   }
 
   if (!requireNamespace("renv", quietly = TRUE)) {
@@ -36,6 +40,10 @@ local({
   missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
 
   if (!dir.exists(project_library) || length(missing_packages) > 0) {
-    renv::restore(project = project_dir, prompt = FALSE)
+    renv::restore(
+      project = project_dir,
+      prompt = FALSE,
+      repos = getOption("repos")
+    )
   }
 })
