@@ -3,5 +3,3 @@
 .Ruserdata
 .DS_Store
 .Rproj.user/
-renv/library/
-renv/staging/
