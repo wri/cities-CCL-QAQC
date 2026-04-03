@@ -16,6 +16,7 @@ library(leaflet)
 library(terra)
 library(ggplot2)
 library(glue)
+library(DT)
 
 # Fixed app configuration shared by all users of this app.
 bucket_name <- "wri-cities-tcm"
@@ -54,6 +55,22 @@ list_ccl_layers <- function(scenario_prefix) {
 build_layer_paths <- function(scenario_prefix, tiles, layer_name) {
   http_base <- build_http_base()
   glue("{http_base}/{scenario_prefix}/{tiles}/ccl_layers/{layer_name}")
+}
+
+# Build the HTTP URL for the metrics CSV for a given city/aoi/infra/scenario combo.
+build_metrics_url <- function(city, aoi_name, infrastructure, scenario) {
+  http_base <- build_http_base()
+  glue(
+    "{http_base}/city_projects/{trimws(city)}/{trimws(aoi_name)}/scenarios/metrics/metrics__{trimws(infrastructure)}__{trimws(scenario)}.csv"
+  )
+}
+
+# Build the HTTP URL for the tile grid GeoJSON in the baseline metadata folder.
+build_tile_grid_url <- function(city, aoi_name) {
+  http_base <- build_http_base()
+  glue(
+    "{http_base}/city_projects/{trimws(city)}/{trimws(aoi_name)}/scenarios/baseline/baseline/metadata/.qgis_data/unbuffered_tile_grid.geojson"
+  )
 }
 
 # Compute the most common value in a numeric vector for nominal raster previews.
@@ -130,20 +147,21 @@ sample_values <- function(rast, data_type, max_cells = 50000) {
 
 # Summary stats for continuous rasters.
 continuous_stats <- function(rast) {
-  min_max <- terra::minmax(rast)
   c(
-    Min = as.numeric(min_max[1, 1]),
-    Mean = as.numeric(terra::global(rast, fun = mean, na.rm = TRUE)[1, 1]),
+    Min    = as.numeric(terra::global(rast, fun = min,    na.rm = TRUE)[1, 1]),
+    Mean   = as.numeric(terra::global(rast, fun = mean,   na.rm = TRUE)[1, 1]),
     Median = as.numeric(terra::global(rast, fun = median, na.rm = TRUE)[1, 1]),
-    Max = as.numeric(min_max[2, 1])
+    Max    = as.numeric(terra::global(rast, fun = max,    na.rm = TRUE)[1, 1])
   )
 }
 
 # Use the display raster for map colors so reprojection/resampling does not
 # generate values outside the palette domain.
 display_range <- function(rast) {
-  min_max <- terra::minmax(rast)
-  range_vals <- c(as.numeric(min_max[1, 1]), as.numeric(min_max[2, 1]))
+  range_vals <- c(
+    as.numeric(terra::global(rast, fun = min, na.rm = TRUE)[1, 1]),
+    as.numeric(terra::global(rast, fun = max, na.rm = TRUE)[1, 1])
+  )
 
   if (isTRUE(all.equal(range_vals[1], range_vals[2]))) {
     range_vals <- range_vals + c(-0.5, 0.5)
@@ -327,6 +345,19 @@ layer_label <- function(layer_name) {
   sub("__.*$", "", layer_name)
 }
 
+# Apply a binary mask raster to a raster, keeping only cells where mask == 1.
+# The mask is cropped and resampled to match the target raster before applying.
+apply_mask_raster <- function(raster, mask_raster) {
+  if (!terra::same.crs(mask_raster, raster)) {
+    mask_raster <- terra::project(mask_raster, terra::crs(raster), method = "near")
+  }
+
+  mask_cropped <- terra::crop(mask_raster, terra::ext(raster), snap = "near")
+  mask_aligned <- terra::resample(mask_cropped, raster, method = "near")
+  mask_binary <- terra::ifel(mask_aligned == 1, 1, NA)
+  terra::mask(raster, mask_binary)
+}
+
 # Get map bounds from a raster already prepared for leaflet.
 get_raster_bounds <- function(rast) {
   ext <- terra::ext(rast)
@@ -430,6 +461,14 @@ scenario_choices <- list(
   "cool-roofs_trees" = "all-buildings_pedestrian-achievable-90pctl"
 )
 
+mask_layer_choices <- c(
+  "None" = "",
+  "building areas" = "building-areas__baseline__baseline.tif",
+  "non-building areas" = "non-building-areas__baseline__baseline.tif",
+  "parks" = "parks__baseline__baseline.tif",
+  "pedestrian areas" = "pedestrian-areas__baseline__baseline.tif"
+)
+
 # The UI stays small: scenario inputs, raster controls, and an optional vector URL.
 ui <- fluidPage(
   tags$head(
@@ -477,6 +516,12 @@ ui <- fluidPage(
         selected = "continuous",
         inline = TRUE
       ),
+      selectInput(
+        "mask_layer",
+        "Mask layer (optional)",
+        choices = mask_layer_choices,
+        selected = ""
+      ),
       textInput(
         "vector_url",
         "Optional vector URL",
@@ -504,7 +549,10 @@ ui <- fluidPage(
       tags$br(),
       tableOutput("stats_table"),
       tags$br(),
-      plotOutput("value_plot", height = 320)
+      plotOutput("value_plot", height = 320),
+      tags$br(),
+      uiOutput("metrics_heading"),
+      DTOutput("metrics_table")
     )
   )
 )
@@ -531,10 +579,12 @@ server <- function(input, output, session) {
     chart_values = NULL,
     stats_vector = NULL,
     vector_data = NULL,
+    tile_grid = NULL,
     loaded_layer_name = NULL,
     loaded_data_type = NULL,
     map_bounds = NULL,
-    pixel_text = "Click the map to read a pixel value."
+    pixel_text = "Click the map to read a pixel value.",
+    metrics = NULL
   )
 
   # Build the selected scenario folder from the UI inputs.
@@ -625,10 +675,12 @@ server <- function(input, output, session) {
     rv$chart_values <- NULL
     rv$stats_vector <- NULL
     rv$vector_data <- NULL
+    rv$tile_grid <- NULL
     rv$loaded_layer_name <- NULL
     rv$loaded_data_type <- NULL
     rv$map_bounds <- NULL
     rv$pixel_text <- "Click the map to read a pixel value."
+    rv$metrics <- NULL
     updateSelectInput(session, "layer_name", choices = character(0))
 
     tryCatch(
@@ -650,13 +702,37 @@ server <- function(input, output, session) {
         safe_notify_error(conditionMessage(e))
       }
     )
+
+    tile_grid_url <- build_tile_grid_url(input$city, input$aoi_name)
+    rv$tile_grid <- tryCatch(
+      {
+        tg <- sf::st_transform(sf::st_read(tile_grid_url, quiet = TRUE), 4326)
+        if (length(rv$tiles) > 0 && "tile_name" %in% names(tg)) {
+          tg <- tg[tg$tile_name %in% rv$tiles, ]
+        }
+        tg
+      },
+      error = function(e) {
+        safe_notify_error(paste("Could not load tile grid:", conditionMessage(e)))
+        NULL
+      }
+    )
   })
 
   # Load the selected raster and optional vector overlay after the cleared map
   # has been flushed to the browser.
-  load_selected_layer <- function(layer_name, scenario_prefix_value, vector_url, tiles, data_type) {
+  load_selected_layer <- function(layer_name, scenario_prefix_value, vector_url, tiles, data_type,
+                                  city, aoi_name, mask_file) {
     raster_paths <- build_layer_paths(scenario_prefix_value, tiles, layer_name)
     full_raster <- load_and_merge(raster_paths, quiet = TRUE)
+
+    if (nzchar(mask_file)) {
+      baseline_prefix <- build_scenario_prefix(city, aoi_name, "baseline", "baseline")
+      mask_paths <- build_layer_paths(baseline_prefix, tiles, mask_file)
+      mask_raster <- load_and_merge(mask_paths, quiet = TRUE)
+      full_raster <- apply_mask_raster(full_raster, mask_raster)
+    }
+
     vector_data <- load_vector_layer(vector_url)
 
     rv$full_raster <- full_raster
@@ -674,6 +750,11 @@ server <- function(input, output, session) {
     vector_url <- input$vector_url
     tiles <- rv$tiles
     data_type <- input$data_type
+    city <- input$city
+    aoi_name <- input$aoi_name
+    infrastructure <- input$infrastructure
+    scenario_name <- input$scenario
+    mask_file <- input$mask_layer
 
     rv$full_raster <- NULL
     rv$map_raster <- NULL
@@ -684,6 +765,7 @@ server <- function(input, output, session) {
     rv$loaded_data_type <- NULL
     rv$map_bounds <- NULL
     rv$pixel_text <- "Click the map to read a pixel value."
+    rv$metrics <- NULL
 
     leafletProxy("map") |>
       clearImages() |>
@@ -694,11 +776,18 @@ server <- function(input, output, session) {
     later::later(function() {
       tryCatch(
         {
-          load_selected_layer(layer_name, scenario_prefix_value, vector_url, tiles, data_type)
+          load_selected_layer(layer_name, scenario_prefix_value, vector_url, tiles, data_type,
+                              city, aoi_name, mask_file)
         },
         error = function(e) {
           safe_notify_error(conditionMessage(e))
         }
+      )
+
+      metrics_url <- build_metrics_url(city, aoi_name, infrastructure, scenario_name)
+      rv$metrics <- tryCatch(
+        read.csv(metrics_url, check.names = FALSE),
+        error = function(e) NULL
       )
     }, delay = 0.1)
   })
@@ -777,12 +866,51 @@ server <- function(input, output, session) {
       proxy <- add_vector_overlay(proxy, rv$vector_data)
     }
 
+    if (!is.null(rv$tile_grid) && nrow(rv$tile_grid)) {
+      tile_grid <- rv$tile_grid
+      centroids <- suppressWarnings(sf::st_centroid(tile_grid))
+      coords <- sf::st_coordinates(centroids)
+
+      proxy <- proxy |>
+        addPolygons(
+          data = tile_grid,
+          color = "#de2d26",
+          weight = 3,
+          fill = FALSE,
+          opacity = 1,
+          group = "Tile grid"
+        ) |>
+        addLabelOnlyMarkers(
+          lng = coords[, "X"],
+          lat = coords[, "Y"],
+          label = tile_grid$tile_name,
+          labelOptions = labelOptions(
+            noHide = TRUE,
+            textOnly = TRUE,
+            style = list(
+              "font-weight" = "bold",
+              "font-size" = "15px",
+              "color" = "#de2d26",
+              "text-shadow" = paste(
+                "-2px -2px 3px white", "2px -2px 3px white",
+                "-2px  2px 3px white", "2px  2px 3px white",
+                sep = ", "
+              )
+            )
+          ),
+          group = "Tile grid"
+        )
+    }
+
     overlay_groups <- character(0)
     if (!is.null(rv$map_raster)) {
       overlay_groups <- c(overlay_groups, "Raster layer")
     }
     if (!is.null(rv$vector_data) && nrow(rv$vector_data)) {
       overlay_groups <- c(overlay_groups, "Vector overlay")
+    }
+    if (!is.null(rv$tile_grid) && nrow(rv$tile_grid)) {
+      overlay_groups <- c(overlay_groups, "Tile grid")
     }
 
     if (length(overlay_groups)) {
@@ -794,6 +922,15 @@ server <- function(input, output, session) {
         )
     }
   })
+
+  # Zoom to tile grid extent as soon as it is loaded.
+  observeEvent(rv$tile_grid, {
+    req(!is.null(rv$tile_grid), nrow(rv$tile_grid) > 0)
+    bounds <- get_vector_bounds(rv$tile_grid)
+    req(!is.null(bounds))
+    leafletProxy("map") |>
+      fitBounds(bounds$lng1, bounds$lat1, bounds$lng2, bounds$lat2)
+  }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
   # Only zoom to extent when a new layer is loaded, not on every redraw.
   observeEvent(rv$map_bounds, {
@@ -885,6 +1022,21 @@ server <- function(input, output, session) {
         labs(x = "Class value", y = "Count") +
         theme_minimal(base_size = 12)
     }
+  })
+
+  output$metrics_heading <- renderUI({
+    req(!is.null(rv$metrics), nrow(rv$metrics) > 0)
+    tags$strong("Metrics")
+  })
+
+  output$metrics_table <- renderDT({
+    req(!is.null(rv$metrics), nrow(rv$metrics) > 0)
+    df <- rv$metrics[, intersect(c("indicators_id", "value"), names(rv$metrics)), drop = FALSE]
+    datatable(
+      df,
+      rownames = FALSE,
+      options = list(pageLength = 25, dom = "tip")
+    )
   })
 }
 

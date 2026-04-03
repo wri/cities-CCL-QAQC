@@ -60,7 +60,8 @@ required_packages <- c(
   "glue",
   "sf",
   "viridisLite",
-  "later"
+  "later",
+  "DT"
 )
 
 install_missing_packages(required_packages)
