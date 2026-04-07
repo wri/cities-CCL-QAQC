@@ -462,7 +462,7 @@ scenario_choices <- list(
 )
 
 mask_layer_choices <- c(
-  "None" = "",
+  "None" = "__none__",
   "building areas" = "building-areas__baseline__baseline.tif",
   "non-building areas" = "non-building-areas__baseline__baseline.tif",
   "parks" = "parks__baseline__baseline.tif",
@@ -520,7 +520,7 @@ ui <- fluidPage(
         "mask_layer",
         "Mask layer (optional)",
         choices = mask_layer_choices,
-        selected = ""
+        selected = "__none__"
       ),
       textInput(
         "vector_url",
@@ -726,7 +726,7 @@ server <- function(input, output, session) {
     raster_paths <- build_layer_paths(scenario_prefix_value, tiles, layer_name)
     full_raster <- load_and_merge(raster_paths, quiet = TRUE)
 
-    if (nzchar(mask_file)) {
+    if (nzchar(mask_file) && mask_file != "__none__") {
       baseline_prefix <- build_scenario_prefix(city, aoi_name, "baseline", "baseline")
       mask_paths <- build_layer_paths(baseline_prefix, tiles, mask_file)
       mask_raster <- load_and_merge(mask_paths, quiet = TRUE)
@@ -853,8 +853,8 @@ server <- function(input, output, session) {
           ) |>
           addLegend(
             position = "bottomright",
-            colors = colors,
-            labels = format_value(classes),
+            colors = rev(colors),
+            labels = format_value(rev(classes)),
             title = layer_label(rv$loaded_layer_name),
             opacity = input$opacity,
             group = "Raster layer"
